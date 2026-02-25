@@ -1,0 +1,41 @@
+services:
+  vulnerable_api:
+    build:
+      context: ./vulnerable_api
+    container_name: vulnerable_api
+    expose:
+      - "8000"
+
+  secure_api:
+    build:
+      context: ./secure_api
+    container_name: secure_api
+    environment:
+      - JWT_SECRET=dev-secret-change-this
+      - JWT_ISSUER=secure-api-owasp-lab
+      - JWT_AUDIENCE=secure-api-clients
+      - JWT_EXPIRE_MINUTES=15
+      - LOG_LEVEL=INFO
+    expose:
+      - "8000"
+
+  nginx_vulnerable:
+    image: nginx:1.25
+    container_name: nginx_vulnerable
+    depends_on:
+      - vulnerable_api
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/vulnerable/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  nginx_secure:
+    image: nginx:1.25
+    container_name: nginx_secure
+    depends_on:
+      - secure_api
+    ports:
+      - "8082:80"
+    volumes:
+      - ./nginx/secure/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/secure/jwt_extract.js:/etc/nginx/jwt_extract.js:ro
