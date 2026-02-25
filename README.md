@@ -55,17 +55,16 @@ Compose**.
 
 ## 🔐 Security Controls Implemented (Secure API)
 
-| Control \| Implementation \|
-
-\|----------\|---------------\| JWT Validation \| Signature, expiration,
-issuer & audience validation \| \| Role-Based Access Control \| Admin
-endpoint protected via role enforcement \| \| Input Validation \| Strict
-Pydantic models \| \| Rate Limiting \| Per-user rate limiting via NGINX
-\| \| Login Protection \| IP-based rate limiting for `/auth/login` \| \|
-Secure CORS \| Restricted origins and headers \| \| Security Headers \|
-X-Frame-Options, X-Content-Type-Options, X-XSS-Protection \| \|
-Suspicious Activity Logging \| Structured logging for failed auth,
-validation errors, and abuse \|
+| Control                        | Implementation                                             |
+|--------------------------------|------------------------------------------------------------|
+| JWT Validation                 | Signature, expiration, issuer & audience validation        |
+| Role-Based Access Control      | Admin endpoint protected via role enforcement              |
+| Input Validation               | Strict Pydantic models                                     |
+| Rate Limiting                  | Per-user rate limiting via NGINX                          |
+| Login Protection               | IP-based rate limiting for `/auth/login`                  |
+| Secure CORS                    | Restricted origins and headers                            |
+| Security Headers               | X-Frame-Options, X-Content-Type-Options, X-XSS-Protection |
+| Suspicious Activity Logging    | Structured logging for failed auth and validation errors  |
 
 ------------------------------------------------------------------------
 
