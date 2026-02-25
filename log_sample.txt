@@ -1,0 +1,184 @@
+Services:
+Vulnerable API via NGINX: http://localhost:8081/docs
+Secure API via NGINX    : http://localhost:8082/docs
+
+Running curl tests...
+[[ Health checks ]]
+VULN: {"status":"ok","app":"Vulnerable API (OWASP Lab)"}SEC : {"status":"ok","app":"Secure API (OWASP Lab)"}
+
+[[ Vulnerable: admin stats without auth (should be 200) ]]
+HTTP/1.1 200 OK
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 87
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: *
+Access-Control-Allow-Headers: *
+
+{"uptime":"unknown","users":1234,"secrets_hint":"admin endpoints should not be public"}
+
+[[ Secure: admin stats without auth (should be 401) ]]
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 41
+Connection: keep-alive
+
+{"detail":"Missing Authorization header"}
+
+[[ Secure: login with invalid credentials (should be 401) ]]
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 32
+Connection: keep-alive
+
+{"detail":"Invalid credentials"}
+
+[[ Secure: login as alice (user role) and extract token ]]
+Alice token acquired
+
+
+[[ Secure: access /items/search with missing token (should be 401) ]]
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 41
+Connection: keep-alive
+
+{"detail":"Missing Authorization header"}
+
+[[ Secure: access /items/search with invalid token (should be 401) ]]
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 26
+Connection: keep-alive
+
+{"detail":"Invalid token"}
+
+[[ Secure: access /items/search with alice token (should be 200) ]]
+HTTP/1.1 200 OK
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 83
+Connection: keep-alive
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Methods: GET, POST
+Access-Control-Allow-Headers: Authorization, Content-Type
+
+{"message":"Search executed (simulated).","query":"test","limit":10,"user":"alice"}
+
+[[ Secure: validation failure (limit too high) (should be 422 with safe body) ]]
+HTTP/1.1 422 Unprocessable Entity
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 36
+Connection: keep-alive
+
+{"detail":"Invalid request payload"}
+
+[[ Vulnerable: reflected feedback (should echo input) ]]
+HTTP/1.1 200 OK
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 161
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: *
+Access-Control-Allow-Headers: *
+
+{"status":"received","email":"attacker@example.com","feedback":"<script>alert(1)</script>","note":"This endpoint is intentionally vulnerable for demonstration."}
+
+[[ Secure: feedback requires auth (should be 401 without token) ]]
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 41
+Connection: keep-alive
+
+{"detail":"Missing Authorization header"}
+
+[[ Secure: feedback with alice token (should be 200) ]]
+HTTP/1.1 200 OK
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 21
+Connection: keep-alive
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Methods: GET, POST
+Access-Control-Allow-Headers: Authorization, Content-Type
+
+{"status":"received"}
+
+[[ Vulnerable: login can self-assign admin role (should succeed) ]]
+HTTP/1.1 200 OK
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 194
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: *
+Access-Control-Allow-Headers: *
+
+{"access_token":"eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJzdWIiOiAiZXZpbCIsICJyb2xlIjogImFkbWluIiwgImV4cCI6IDE3NzI2NjQ5NTZ9.Q36HgQIrP4RVKfU5_pz6HZquIh2npV8-MOyQlhd8MsM","token_type":"bearer"}
+
+[[ Secure: admin endpoint with alice token (should be 403) ]]
+HTTP/1.1 403 Forbidden
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 22
+Connection: keep-alive
+
+{"detail":"Forbidden"}
+
+[[ Secure: login as admin and access admin stats (should be 200) ]]
+HTTP/1.1 200 OK
+Server: nginx/1.25.5
+Date: Wed, 25 Feb 2026 22:55:56 GMT
+Content-Type: application/json
+Content-Length: 95
+Connection: keep-alive
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Methods: GET, POST
+Access-Control-Allow-Headers: Authorization, Content-Type
+
+{"uptime":"unknown","users":1234,"note":"This endpoint requires admin role in the secure API."}
+
+[[ Secure: rate limiting test on /items/search (expect some 429) ]]
+Request 1 -> 200
+Request 2 -> 200
+Request 3 -> 200
+Request 4 -> 200
+Request 5 -> 200
+Request 6 -> 200
+Request 7 -> 200
+Request 8 -> 429
+Request 9 -> 429
+Request 10 -> 429
+Request 11 -> 429
+Request 12 -> 429
+Request 13 -> 200
+Request 14 -> 429
+Request 15 -> 429
+Request 16 -> 429
+Request 17 -> 429
+Request 18 -> 429
+Request 19 -> 429
+Request 20 -> 429
+
+
+Done.
