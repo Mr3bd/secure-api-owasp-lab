@@ -210,8 +210,8 @@ Security professionals.
 
 ## 👨‍💻 Author
 
-Abdullrahman Alhawamdeh\
-🔗 https://www.linkedin.com/in/mr3bd\
+Abdullrahman Alhawamdeh
+🔗 https://www.linkedin.com/in/mr3bd
 🌐 https://mr3bd.com
 
 Made with ❤️ using FastAPI, NGINX, Docker, and modern API security best
